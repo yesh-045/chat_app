@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Room</title>
+</head>
+<body>
+<h1>Create a New Room</h1>
+<form method="POST" action="{{ url_for('create_room') }}">
+    <div>
+        <label for="room_name">Room Name:</label>
+        <input type="text" name="room_name" id="room_name" required>
+    </div>
+    <div>
+        <label for="members">Members (comma-separated):</label>
+        <input type="text" name="members" id="members" required>
+    </div>
+    <div>
+        <button type="submit">Create Room</button>
+    </div>
+</form>
+<p>{{ message }}</p>
+</body>
+</html>
