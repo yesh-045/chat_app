@@ -3,11 +3,9 @@ from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 from user import User
 
-
 def get_db_connection():
     conn = psycopg2.connect(dbname="chat_app", user="yesh", password="chattheeye", host="localhost")
     return conn
-
 
 def save_user(username, email, password):
     password_hash = generate_password_hash(password)
@@ -20,7 +18,6 @@ def save_user(username, email, password):
     finally:
         cursor.close()
         conn.close()
-
 
 def get_user(username):
     conn = get_db_connection()
@@ -35,7 +32,6 @@ def get_user(username):
         conn.close()
     return None
 
-
 def save_room(room_name, created_by):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -49,7 +45,6 @@ def save_room(room_name, created_by):
         cursor.close()
         conn.close()
 
-
 def add_room_members(room_id, room_name, usernames, added_by):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -60,7 +55,6 @@ def add_room_members(room_id, room_name, usernames, added_by):
     finally:
         cursor.close()
         conn.close()
-
 
 def get_rooms_for_user(username):
     conn = get_db_connection()
@@ -77,7 +71,6 @@ def get_rooms_for_user(username):
         cursor.close()
         conn.close()
 
-
 def get_room(room_id):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -87,7 +80,6 @@ def get_room(room_id):
     finally:
         cursor.close()
         conn.close()
-
 
 def is_room_member(room_id, username):
     conn = get_db_connection()
@@ -99,17 +91,17 @@ def is_room_member(room_id, username):
         cursor.close()
         conn.close()
 
-
 def get_room_members(room_id):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cursor.execute("SELECT u.username FROM users u JOIN room_members rm ON u.username = rm.username WHERE rm.room_id = %s", (room_id,))
-        return cursor.fetchall()
+        members = cursor.fetchall()
+        # Extract the username from each RealDictRow object
+        return [member['username'] for member in members]
     finally:
         cursor.close()
         conn.close()
-
 
 def is_room_admin(room_id, username):
     conn = get_db_connection()
@@ -121,7 +113,6 @@ def is_room_admin(room_id, username):
         cursor.close()
         conn.close()
 
-
 def update_room(room_id, room_name):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -131,7 +122,6 @@ def update_room(room_id, room_name):
     finally:
         cursor.close()
         conn.close()
-
 
 def remove_room_members(room_id, usernames):
     conn = get_db_connection()
@@ -144,30 +134,30 @@ def remove_room_members(room_id, usernames):
         cursor.close()
         conn.close()
 
-
-def save_message(room_id, text, sender):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+def save_message(room_id, message, sender):
+    conn = None
     try:
-        cursor.execute("INSERT INTO messages (room_id, text, sender) VALUES (%s, %s, %s)",
-                       (room_id, text, sender))
-        conn.commit()
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO messages (room_id, text, sender) VALUES (%s, %s, %s)"
+        cursor.execute(query, (room_id, message, sender))
+        conn.commit()  # Commit the transaction to save the message
+        print("Message saved to database: Room ID {}, Sender {}, Message {}".format(room_id, sender, message))
+    except Exception as e:
+        print("Failed to save message to database: {}".format(str(e)))
+        if conn:
+            conn.rollback()  # Rollback the transaction on error
     finally:
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
-
-def get_messages(room_id, page=0):
+def get_room_messages(room_id):
     conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    try:
-        cursor.execute("""
-            SELECT * FROM messages
-            WHERE room_id = %s
-            ORDER BY created_at DESC
-            LIMIT 20 OFFSET %s
-        """, (room_id, page * 20))
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
+    cur = conn.cursor()
+    cur.execute('SELECT sender, text, created_at FROM messages WHERE room_id = %s ORDER BY created_at ASC', (room_id,))
+    messages = cur.fetchall()
+    cur.close()
+    conn.close()
+    return messages

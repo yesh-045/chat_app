@@ -3,20 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Room</title>
+    <script>
+        function setAction(actionType) {
+            // Set the value of the hidden input to the action type
+            document.getElementById('actionType').value = actionType;
+            // Submit the form
+            document.getElementById('editRoomForm').submit();
+        }
+    </script>
 </head>
 <body>
 <h1>Edit Room: {{ room.name }}</h1>
-<form method="POST" action="{{ url_for('edit_room', room_id=room._id) }}">
+<form id="editRoomForm" method="POST" action="{{ url_for('edit_room', room_id=room_id) }}">
+    <input type="hidden" name="action_type" id="actionType" value="edit"> <!-- Hidden input to indicate action type -->
     <div>
         <label for="room_name">Room Name:</label>
         <input type="text" name="room_name" id="room_name" value="{{ room.name }}" required>
     </div>
     <div>
         <label for="members">Members (comma-separated):</label>
-        <input type="text" name="members" id="members" value="{{ room_members_str }}" required>
+        <input type="text" name="members" id="members" value="{{ room_members_str }}">
     </div>
     <div>
-        <button type="submit">Save Changes</button>
+        <button type="button" onclick="setAction('edit')">Save Changes</button>
+        <button type="button" onclick="setAction('remove')">Remove Members</button>
+        <button type="button" onclick="setAction('add')">Add Members</button>
     </div>
 </form>
 <p>{{ message }}</p>
