@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>Login</h1>
-<form method="POST" action="{{ url_for('login') }}">
-    <div>
+<div class="container main-content">
+    <h1>Login</h1>
+    <form method="POST" action="{{ url_for('login') }}">
         <label for="username">Username:</label>
         <input type="text" name="username" id="username" required>
-    </div>
-    <div>
+        
         <label for="password">Password:</label>
         <input type="password" name="password" id="password" required>
-    </div>
-    <div>
+        
         <button type="submit">Login</button>
-    </div>
-</form>
-<p>{{ message }}</p>
-<a href="{{ url_for('signup') }}">Don't have an account? Sign up here</a>
+    </form>
+    <p>{{ message }}</p>
+    <a href="{{ url_for('signup') }}">Don't have an account? Sign up here</a>
+</div>
 </body>
 </html>

@@ -3,22 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Create Room</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>Create a New Room</h1>
-<form method="POST" action="{{ url_for('create_room') }}">
-    <div>
+<header>
+    <div class="container">
+        <h1>My Chat App</h1>
+        <h3>Hi {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Guest{% endif %}!</h3>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('create_room') }}">Create Room</a>
+            <a href="{{ url_for('rooms') }}">My rooms</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Signup</a>
+        {% endif %}
+    </div>
+</header>
+<div class="container main-content">
+    <h1>Create Room</h1>
+    <form method="POST" action="{{ url_for('create_room') }}">
         <label for="room_name">Room Name:</label>
         <input type="text" name="room_name" id="room_name" required>
-    </div>
-    <div>
-        <label for="members">Members (comma-separated):</label>
-        <input type="text" name="members" id="members" required>
-    </div>
-    <div>
+        
         <button type="submit">Create Room</button>
-    </div>
-</form>
-<p>{{ message }}</p>
+    </form>
+    <p>{{ message }}</p>
+</div>
 </body>
 </html>
