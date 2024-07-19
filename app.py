@@ -111,8 +111,7 @@ def edit_room(room_id):
     room = get_room(room_id)
     if not room:
         flash('Room not found.', 'error')
-        return redirect(url_for('index'))  # Assuming 'index' is the route name for your homepage or room list
-
+        return redirect(url_for('index')) 
     if not is_room_admin(room_id, current_user.username):
         flash('You do not have permission to edit this room.', 'error')
         return redirect(url_for('view_room', room_id=room_id))

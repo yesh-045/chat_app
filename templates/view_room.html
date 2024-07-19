@@ -11,6 +11,15 @@
         <h1>Welcome to chat room: {{ room[1] }}</h1>
         <a href="{{ url_for('edit_room', room_id=room_id) }}">Edit Room</a>
     </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     <div class="chat-area">
         <div id="messages" class="messages-container">
             {% for message in messages %}
@@ -110,6 +119,18 @@
         newNode.innerHTML = `<b>${data.username}</b> has left the room`;
         document.getElementById('messages').appendChild(newNode);
     });
+    document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                const flashMessages = document.querySelectorAll('.flash');
+                flashMessages.forEach(function (message) {
+                    message.style.transition = 'opacity 0.5s ease-out';
+                    message.style.opacity = '0';
+                    setTimeout(function () {
+                        message.remove();
+                    }, 500);
+                });
+            }, 2000);
+        });
 </script>
 </body>
 </html>

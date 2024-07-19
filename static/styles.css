@@ -24,7 +24,6 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 
 .sidebar a {
@@ -35,6 +34,43 @@ body {
 
 .sidebar a:hover {
     text-decoration: underline;
+}
+
+.sidebar button {
+    background-color: #fff;
+    color: #4a90e2;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar button:hover {
+    background-color: #e1e1e1;
+}
+
+.members-list {
+    margin-top: 20px;
+    display: none;
+    flex-direction: column;
+}
+
+.members-list.hidden {
+    display: none;
+}
+
+.members-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.members-list ul li {
+    background-color: #fff;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .chat-area {
@@ -121,14 +157,6 @@ ul {
     padding: 0;
 }
 
-ul li {
-    background-color: #fff;
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
 @media (max-width: 768px) {
     .main-container {
         flex-direction: column;
@@ -146,4 +174,42 @@ ul li {
         margin-top: 10px;
         margin-left: 0;
     }
+}
+.flash-messages {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 80%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.flash {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    color: #fff;
+    text-align: center;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+.flash.error {
+    background-color: #e74c3c;
+}
+
+.flash.success {
+    background-color: #2ecc71;
+}
+
+.flash.info {
+    background-color: #3498db;
+}
+
+.flash.warning {
+    background-color: #f39c12;
 }

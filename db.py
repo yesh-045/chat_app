@@ -120,8 +120,7 @@ def update_room(room_id, room_name):
         cursor.execute("UPDATE rooms SET name = %s WHERE id = %s", (room_name, room_id))
         conn.commit()
     finally:
-        cursor.close()
-        conn.close()
+        return 0
 
 def remove_room_members(room_id, usernames):
     conn = get_db_connection()
