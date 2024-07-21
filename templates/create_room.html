@@ -25,8 +25,11 @@
     <form method="POST" action="{{ url_for('create_room') }}">
         <label for="room_name">Room Name:</label>
         <input type="text" name="room_name" id="room_name" required>
-        
+        <br>
+        <label for="members">Members:(In CSV Format)</label>
+        <input type="text" name="members" id="members" required>
         <button type="submit">Create Room</button>
+        
     </form>
     <p>{{ message }}</p>
 </div>

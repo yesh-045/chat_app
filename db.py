@@ -7,13 +7,13 @@ def get_db_connection():
     conn = psycopg2.connect(dbname="chat_app", user="yesh", password="chattheeye", host="localhost")
     return conn
 
-def save_user(username, email, password):
+def save_user(username, email, password, role='user'):
     password_hash = generate_password_hash(password)
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
-                       (username, email, password_hash))
+        cursor.execute("INSERT INTO users (username, email, password, role) VALUES (%s, %s, %s, %s)",
+                       (username, email, password_hash, role))
         conn.commit()
     finally:
         cursor.close()
