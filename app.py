@@ -1,7 +1,9 @@
 from datetime import datetime
 from json import dumps
 from flask import jsonify
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,session
+from flask import current_app
+import secrets
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, join_room, leave_room
 import psycopg2
@@ -9,10 +11,23 @@ from psycopg2.extras import RealDictCursor
 from flask import request, redirect, url_for, render_template, flash
 from db import get_user, save_user, save_room, add_room_members, get_rooms_for_user, get_room, is_room_member, \
     get_room_members, is_room_admin, update_room, remove_room_members, save_message, get_room_messages
+from authlib.integrations.flask_client import OAuth
 
 
 app = Flask(__name__)
 app.secret_key = "my secret key"
+oauth=OAuth(app)
+oauth.register(
+    name='google',
+    client_id='580912504613-uhg24iaj96344v70hkn7d7d0ddn7eaq7.apps.googleusercontent.com',
+    client_secret='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',
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={
+        'scope': 'openid email profile',
+        'prompt': 'select_account'
+    }
+)
+
 socketio = SocketIO(app)
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -30,6 +45,59 @@ def home():
         rooms = get_rooms_for_user(current_user.username)
     return render_template("index.html", rooms=rooms)
 
+@app.route('/login/google')
+def login_google():
+    # Generate a secure random nonce
+    nonce = secrets.token_urlsafe(16)
+    # Store the nonce in the session
+    session['google_auth_nonce'] = nonce
+
+    redirect_uri = url_for('authorized', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
+
+from flask import session, abort
+
+@app.route('/oauth2callback')
+def authorized():
+    try:
+        # Retrieve the nonce from the session
+        nonce = session.pop('google_auth_nonce', None)
+        
+        token = oauth.google.authorize_access_token()
+        if not token:
+            current_app.logger.error("Failed to obtain access token")
+            return 'Authorization failed: No token received', 400
+
+        # Pass the nonce when parsing the ID token
+        user_info = oauth.google.parse_id_token(token, nonce=nonce)
+        if not user_info:
+            current_app.logger.error("Failed to parse ID token")
+            return 'Authorization failed: Invalid ID token', 400
+
+        # Verify that the nonce in the ID token matches the one we sent
+        if user_info.get('nonce') != nonce:
+            current_app.logger.error("Nonce mismatch")
+            return 'Authorization failed: Invalid nonce', 400
+
+        google_id = user_info['sub']
+        email = user_info['email']
+        username = email.split('@')[0]
+
+        user = get_user(username)
+        if not user:
+            save_user(username, email, '', google_id, 'user')
+            user = get_user(username)
+
+        if not user:
+            current_app.logger.error(f"Failed to create or retrieve user: {username}")
+            return 'Authorization failed: User creation error', 500
+
+        login_user(user)
+        return redirect(url_for('home'))
+
+    except Exception as e:
+        current_app.logger.error(f"OAuth error: {str(e)}")
+        return f'Authorization failed: {str(e)}', 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -60,7 +128,7 @@ def signup():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        role = request.form.get('role', 'user')  # Default role is 'user'
+        role = request.form.get('role', 'user')  
         try:
             save_user(username, email, password, role)
             return redirect(url_for('login'))
