@@ -6,4 +6,5 @@ python-socketio==5.7.2
 eventlet
 pymongo
 flask-login
+gunicorn == 22.0.0
 
